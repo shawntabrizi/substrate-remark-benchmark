@@ -41,9 +41,9 @@ async function main() {
   let total_transactions = 1000000;
 
   // How many transactions to send out at once
-  let tx_batch_size = 3;
+  let tx_batch_size = 100;
   // How long to pause before the next batch (ms).
-  let pause_time = 100;
+  let pause_time = 1000;
 
   for (let i = 0; i < total_transactions; i += 1) {
     try {
@@ -54,9 +54,11 @@ async function main() {
         await sleep(pause_time);
       }
 
+      console.log(`${i}: Signing and Sending`)
+
       const unsub = await api.tx.system
         .remark('')
-        .signAndSend(account, { nonce: txNonce }, async function(result) {
+        .signAndSend(account, { nonce: txNonce }, function(result) {
           console.log(`${i}: Current status is ${result.status}`);
 
           if (result.status.isFinalized) {

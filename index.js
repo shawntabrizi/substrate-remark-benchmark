@@ -32,30 +32,37 @@ async function main() {
   // Subscribe to new blocks being produced, not necessarily finalized ones.
   const unsubscribe = await api.rpc.chain.subscribeNewHeads(async header => {
     await api.rpc.chain.getBlock(header.hash, async block => {
-        // The block number
-        let blockNumber = block.block.header.number.toNumber();
-        // Extrinsics in the block
-		let extrinsics = await block.block.extrinsics;
-		// Current account nonce:
-		let accountNonce = await api.query.system.accountNonce(account.address);
+      // The block number
+      let blockNumber = block.block.header.number.toNumber();
+      // Extrinsics in the block
+      let extrinsics = await block.block.extrinsics;
+      // Current account nonce:
+      let accountNonce = await api.query.system.accountNonce(account.address);
+      // Current block time
+      let time = await api.query.timestamp.now();
 
-        console.log(`Block ${blockNumber} had ${extrinsics.length} extrinsics and Alice has nonce ${accountNonce}`);
+      console.log(
+        `Block ${blockNumber} had ${extrinsics.length} extrinsics and Alice has nonce ${accountNonce} and block time is ${Date(time)}`
+      );
 
+      if (blockNumber % 10 == 0) {
         let promises = [];
-        let tx_batch_size = 400;
+        let tx_batch_size = 4000;
         // Create transactions
         for (let i = 0; i < tx_batch_size; i += 1) {
+          //i % 500 == 0 ? console.log(i) : null;
           let txNonce = parseInt(accountNonce) + parseInt(i);
           promises.push(
             api.tx.system.remark('').signAndSend(account, { nonce: txNonce })
           );
         }
-		Promise.all(promises)
+        Promise.all(promises);
+      }
     });
   });
 }
 
 // Suppress error messages from RPC Core
-console.error = function() {}
+console.error = function() {};
 
 main().catch(console.error);

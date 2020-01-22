@@ -29,6 +29,26 @@ async function main() {
   // await keyring.getPair(input_json.address).decodePkcs8('password');
   // let account = keyring.getPair(input_json.address);
 
+  let txs = [];
+
+  let startingAccountNonce = await api.query.system.accountNonce(
+    account.address
+  );
+
+  // Create and sign transaction ahead of time
+  let tx_total_size = 100000;
+  for (let i = 0; i < tx_total_size; i += 1) {
+    if ((10 * i) % tx_total_size == 0) {
+      console.log((100 * i) / tx_total_size, '%');
+    }
+    let txNonce = startingAccountNonce.toNumber() + i;
+    txs.push(
+      api.tx.system.remark('').sign(account, { nonce: txNonce, era: 0 })
+    );
+  }
+
+  console.log('Done.');
+
   // Subscribe to new blocks being produced, not necessarily finalized ones.
   const unsubscribe = await api.rpc.chain.subscribeNewHeads(async header => {
     await api.rpc.chain.getBlock(header.hash, async block => {
@@ -42,21 +62,17 @@ async function main() {
       let time = await api.query.timestamp.now();
 
       console.log(
-        `Block ${blockNumber} had ${extrinsics.length} extrinsics and Alice has nonce ${accountNonce} and block time is ${Date(time)}`
+        `Block ${blockNumber} had ${
+          extrinsics.length
+        } extrinsics and Alice has nonce ${accountNonce} and block time is ${Date(
+          time
+        )}`
       );
 
-      if (blockNumber % 10 == 0) {
-        let promises = [];
-        let tx_batch_size = 4000;
-        // Create transactions
-        for (let i = 0; i < tx_batch_size; i += 1) {
-          //i % 500 == 0 ? console.log(i) : null;
-          let txNonce = parseInt(accountNonce) + parseInt(i);
-          promises.push(
-            api.tx.system.remark('').signAndSend(account, { nonce: txNonce })
-          );
-        }
-        Promise.all(promises);
+      for(let i = 0; i < 2000; i ++) {
+        api.rpc.author.submitExtrinsic(
+          txs[accountNonce - startingAccountNonce + i]
+        );
       }
     });
   });

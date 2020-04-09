@@ -31,7 +31,7 @@ async function main() {
 
   let txs = [];
 
-  let startingAccountNonce = await api.query.system.accountNonce(
+  let { nonce: startingAccountNonce }  = await api.query.system.account(
     account.address
   );
 
@@ -57,7 +57,7 @@ async function main() {
       // Extrinsics in the block
       let extrinsics = await block.block.extrinsics;
       // Current account nonce:
-      let accountNonce = await api.query.system.accountNonce(account.address);
+      let { nonce: accountNonce } = await api.query.system.account(account.address);
       // Current block time
       let time = await api.query.timestamp.now();
 

@@ -69,9 +69,12 @@ async function main() {
         )}`
       );
 
-      for(let i = 0; i < 2000; i ++) {
+    });
+  });
+for(let i = 0; i < tx_total_size; i ++) {
         api.rpc.author.submitExtrinsic(
-          txs[accountNonce - startingAccountNonce + i]
+        txs[i]
+        //txs[accountNonce - startingAccountNonce + i]
         );
       }
     });

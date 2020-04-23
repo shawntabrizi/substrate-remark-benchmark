@@ -31,7 +31,7 @@ async function main() {
 
   let txs = [];
 
-  let startingAccountNonce = await api.query.system.accountNonce(
+  let { nonce: startingAccountNonce }  = await api.query.system.account(
     account.address
   );
 
@@ -57,7 +57,7 @@ async function main() {
       // Extrinsics in the block
       let extrinsics = await block.block.extrinsics;
       // Current account nonce:
-      let accountNonce = await api.query.system.accountNonce(account.address);
+      let { nonce: accountNonce } = await api.query.system.account(account.address);
       // Current block time
       let time = await api.query.timestamp.now();
 
@@ -69,9 +69,12 @@ async function main() {
         )}`
       );
 
-      for(let i = 0; i < 2000; i ++) {
+    });
+  });
+for(let i = 0; i < tx_total_size; i ++) {
         api.rpc.author.submitExtrinsic(
-          txs[accountNonce - startingAccountNonce + i]
+        txs[i]
+        //txs[accountNonce - startingAccountNonce + i]
         );
       }
     });
